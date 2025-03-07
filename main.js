@@ -22,7 +22,7 @@ function aboutWindow() {
   if (mainWindow) {
     about = new BrowserWindow({
       width: 320,
-      height: 280,
+      height: 300,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
