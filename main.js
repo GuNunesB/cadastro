@@ -1,12 +1,20 @@
 console.log('Hello from Electron 👋')
 
-const { app, BrowserWindow, nativeTheme, Menu, shell } = require('electron/main')
+const { app, BrowserWindow, nativeTheme, Menu, shell, ipcMain } = require('electron/main')
+
+const path = require('node:path')
+
+const { conectar, desconectar } = require('./database.js')
 
 const createWindow = () => {
   nativeTheme.themeSource = 'light'
   const win = new BrowserWindow({
-    width: 800,
-    height: 600
+    width: 1010,
+    height: 720,
+
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   })
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(templete))
@@ -22,7 +30,7 @@ function aboutWindow() {
   if (mainWindow) {
     about = new BrowserWindow({
       width: 320,
-      height: 300,
+      height: 210,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
@@ -36,6 +44,13 @@ function aboutWindow() {
 app.whenReady().then(() => {
   createWindow()
 
+  ipcMain.on('db-connect', async (event) => {
+    await conectar()
+
+    setTimeout(() => {
+      event.reply('db-status', "conectado")
+    }, 500)
+  })
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow()
@@ -47,6 +62,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', async () => {
+  await desconectar()
 })
 
 app.commandLine.appendSwitch('log-level', '3')
@@ -90,6 +109,10 @@ const templete =[
       },
       {
         type: 'separator'
+      },
+      {
+        label: 'Recarregar',
+        role: 'reload'
       },
       {
         label: 'DevTools',
