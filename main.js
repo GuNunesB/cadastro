@@ -6,11 +6,12 @@ const path = require('node:path')
 
 const { conectar, desconectar } = require('./database.js')
 
+let win
 const createWindow = () => {
   nativeTheme.themeSource = 'light'
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 1010,
-    height: 720,
+    height: 780,
 
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
@@ -29,16 +30,26 @@ function aboutWindow() {
   const mainWindow = BrowserWindow.getFocusedWindow()
   if (mainWindow) {
     about = new BrowserWindow({
-      width: 320,
-      height: 210,
+      width: 400,
+      height: 320,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
       parent: mainWindow,
-      modal: true
+      modal: true,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js')// link para receber a msg
+      }
     })
   }
   about.loadFile('./src/views/sobre.html')
+
+  ipcMain.on('about-exit', () => {
+    if (about && !about.isDestroyed()) {
+      about.close()
+    }
+
+  })
 }
 
 app.whenReady().then(() => {
@@ -70,7 +81,7 @@ app.on('before-quit', async () => {
 
 app.commandLine.appendSwitch('log-level', '3')
 
-const templete =[
+const templete = [
   {
     label: 'Cadastro',
     submenu: [

@@ -27,3 +27,28 @@ footer p {
     color: #fff;
     font-size: 1.25em;
 }
+
+.caixa {
+    width: 600px;
+}
+
+.cabecalho {
+    width: 100vw;
+    height: auto;
+    background: #131313;
+}
+
+.button {
+    padding: 5px 15px;
+    border: 1px solid #808080;
+    border-radius: 5px;
+    cursor: pointer;
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+}
+
+#sobre h3 {
+    color: var(--cinza);
+    font-weight: 500;
+}
