@@ -1,13 +1,11 @@
 @charset "UTF-8";
 
-/** importação de fonts off-line **/
-@font-face {
-    font-family: "Fredoka";
-    src: url("../Fredoka/Fredoka-VariableFont_wdth\,wght.ttf");
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
-body {
-    font-family: "Fredoka";
+* {
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
 }
 
 /** Rodapé **/
@@ -15,7 +13,7 @@ footer {
     width: 100vw;
     height: 45px;
     padding: 5px;
-    background-color: #007e11;
+    background-color: #ffce3b;
     display: flex;   
     justify-content: space-between;    
     position: fixed;
@@ -40,15 +38,22 @@ footer p {
 
 .button {
     padding: 5px 15px;
-    border: 1px solid #808080;
+    border: 1px solid #ffce3b;
     border-radius: 5px;
     cursor: pointer;
     position: fixed;
     bottom: 15px;
     right: 15px;
+    background-color: none;
+    color: #ffce3b;
+}
+.button:hover {
+    transition: 1s;
+    border: none;
+    background-color: #ffce3b;
+    color: #000000;
 }
 
 #sobre h3 {
-    color: var(--cinza);
-    font-weight: 500;
+    color: #ffce3b;
 }
