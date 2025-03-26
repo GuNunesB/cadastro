@@ -4,6 +4,8 @@ const path = require('node:path')
 
 const { conectar, desconectar } = require('./database.js')
 
+const clienteModel = require('./src/models/Clientes.js')
+
 let win
 const createWindow = () => {
   nativeTheme.themeSource = 'light'
@@ -150,3 +152,27 @@ const templete = [
     ]
   }
 ]
+
+//= CRUD CREATE ===============================================//
+
+//Recebe o objeto com os dados
+ipcMain.on('create-cliente', async (event, newCliente) => {
+  console.log(newCliente)
+
+  const newClientes = clienteModel({ // nomeCampo: newCliente.caompoRenderer,
+    nomeCliente: newCliente.nomeCli,
+    telCliente: newCliente.telCli,
+    email: newCliente.emailCli,
+    senha: newCliente.senhaCli,
+    cep: newCliente.cepCli,
+    cidade: newCliente.cidadeCli,
+    uf: newCliente.ufCli,
+    logradouro: newCliente.logradouroCli,
+    bairro: newCliente.bairroCli,
+    cpf: newCliente.cpfCli,
+    complemento: newCliente.complementoCli,
+  })
+
+  // Salvar no MongoDB
+  newclientes.save()
+})

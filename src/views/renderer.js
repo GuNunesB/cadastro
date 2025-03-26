@@ -22,6 +22,58 @@ api.dbStatus((event, message) => {
     }
 })
 
+// processo de cadastro do cliente //
+
+console.log("teste")
+
+const foco = document.getElementById('inputNome')
+
+document.addEventListener('DOMContentLoaded', () => {
+    foco.focus()// iniciar documento com foca na caixa de texto
+})
+
+// Captura de dados
+let formCli = document.getElementById('formCli')
+let nome = document.getElementById('inputNome')
+let tel = document.getElementById('inputTel')
+let email = document.getElementById('inputEmail4')
+let senha = document.getElementById('inputPassword4')
+let cep = document.getElementById('cep')
+let cidade = document.getElementById('cidade')
+let uf = document.getElementById('uf')
+let logradouro = document.getElementById('logradouro')
+let bairro = document.getElementById('bairro')
+let cpf = document.getElementById('cpf')
+let complemento = document.getElementById('inputCompl')
+
+//= CRUD CREATE ===============================================//
+
+formNote.addEventListener('submit', async (event) => {
+    // evitar comportamento padrão de recarregar a página
+    event.preventDefault()
+
+    console.log(note.value, color.value)
+
+    const newCliente = {
+        nomeCli: nome.value,
+        telCli: tel.value,
+        emailCli: email.value,
+        senhaCli: senha.value,
+        cepCli: cep.value,
+        cidadeCli: cidade.value,
+        ufCli: uf.value,
+        logradouroCli: logradouro.value,
+        bairroCli: bairro.value,
+        cpfCli: cpf.value,
+        complementoCli: complemento.value
+    }
+
+    api.addCliente(newCliente)
+
+})
+
+// fim processo de cadastro do cliente //
+
 /*Validadores para cadastro de um cliente*/
 
 // Validação de e-mail
