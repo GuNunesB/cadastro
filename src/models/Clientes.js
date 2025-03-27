@@ -14,7 +14,7 @@ const clinteSchema = new Schema({
         type: String,
     },
     cep: {
-        type: Number,
+        type: String,
     },
     cidade: {
         type: String,

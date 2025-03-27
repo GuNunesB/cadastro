@@ -174,5 +174,5 @@ ipcMain.on('create-cliente', async (event, newCliente) => {
   })
 
   // Salvar no MongoDB
-  newclientes.save()
+  newClientes.save()
 })

@@ -48,11 +48,22 @@ let complemento = document.getElementById('inputCompl')
 
 //= CRUD CREATE ===============================================//
 
-formNote.addEventListener('submit', async (event) => {
+formCli.addEventListener('submit', async (event) => {
     // evitar comportamento padrão de recarregar a página
     event.preventDefault()
 
-    console.log(note.value, color.value)
+    console.log(
+        nome.value, 
+        tel.value,
+        email.value,
+        senha.value,
+        cep.value,
+        cidade.value,
+        uf.value,
+        logradouro.value,
+        bairro.value,
+        cpf.value
+    )
 
     const newCliente = {
         nomeCli: nome.value,
@@ -126,8 +137,6 @@ function validarCPF() {
         return false;
     }
 
-    cpfErro.textContent = "CPF válido!";
-    cpfErro.style.color = "green";
     cpfInput.style.border = "2px solid green";
     return true;
 }
@@ -167,10 +176,7 @@ function buscarEndereco() {
             document.getElementById('cidade').value = dados.localidade || '';
             document.getElementById('uf').value = dados.uf || '';
 
-            // Exibe sucesso
-            cepErro.textContent = "CEP válido!";
-            cepErro.style.color = "green";
-            cepInput.style.border = "2px solid green";
+            cepInput.style.border = "2px solid #008000";
         })
         .catch(error => {
             console.error('Erro ao buscar o endereço:', error);
