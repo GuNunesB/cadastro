@@ -1,4 +1,4 @@
-const { app, BrowserWindow, nativeTheme, Menu, shell, ipcMain } = require('electron/main')
+const { app, BrowserWindow, nativeTheme, Menu, shell, ipcMain, dialog } = require('electron/main')
 
 const path = require('node:path')
 
@@ -112,7 +112,7 @@ const templete = [
       {
         label: 'Ampliar',
         role: 'zoomIn',
-        accelerator: 'Ctrl++'
+        accelerator: 'Ctrl+='
       },
       {
         label: 'Reduzir',
@@ -155,24 +155,38 @@ const templete = [
 
 //= CRUD CREATE ===============================================//
 
-//Recebe o objeto com os dados
 ipcMain.on('create-cliente', async (event, newCliente) => {
   console.log(newCliente)
 
-  const newClientes = clienteModel({ // nomeCampo: newCliente.caompoRenderer,
-    nomeCliente: newCliente.nomeCli,
-    telCliente: newCliente.telCli,
-    email: newCliente.emailCli,
-    senha: newCliente.senhaCli,
-    cep: newCliente.cepCli,
-    cidade: newCliente.cidadeCli,
-    uf: newCliente.ufCli,
-    logradouro: newCliente.logradouroCli,
-    bairro: newCliente.bairroCli,
-    cpf: newCliente.cpfCli,
-    complemento: newCliente.complementoCli,
-  })
+  try {
+    const newClientes = clienteModel({
+      nomeCliente: newCliente.nomeCli,
+      telCliente: newCliente.telCli,
+      email: newCliente.emailCli,
+      senha: newCliente.senhaCli,
+      cep: newCliente.cepCli,
+      cidade: newCliente.cidadeCli,
+      uf: newCliente.ufCli,
+      logradouro: newCliente.logradouroCli,
+      bairro: newCliente.bairroCli,
+      cpf: newCliente.cpfCli,
+      complemento: newCliente.complementoCli,
+    })
 
-  // Salvar no MongoDB
-  newClientes.save()
+    await newClientes.save()
+
+    dialog.showMessageBox({
+      type: 'info',
+      title: "Aviso",
+      message: "Cliente adicionado com sucesso.",
+      buttons: ['OK']
+    }).then((result) => {
+      if (result.response === 0) {
+        event.reply('reset-form')
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+  }
 })

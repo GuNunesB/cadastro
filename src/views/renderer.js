@@ -29,6 +29,10 @@ console.log("teste")
 const foco = document.getElementById('inputNome')
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Desativar botões
+    btnUpdate.disabled = true
+    btnDelete.disabled = true
+
     foco.focus()// iniciar documento com foca na caixa de texto
 })
 
@@ -184,3 +188,16 @@ function buscarEndereco() {
             cepInput.style.border = "2px solid red";
         });
 }
+
+//= RESET FORM ================================================//
+
+function resetForm() {
+    location.reload()
+}
+
+
+api.resetForm((args) => {
+    resetForm()
+})
+
+//= FIM RESET FORM ============================================//

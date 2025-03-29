@@ -2,6 +2,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
+:root {
+    --principal: #717171;
+    --secundaria: #565656;
+}
+
 * {
     font-family: "Poppins", sans-serif;
     font-weight: 400;
@@ -13,7 +18,7 @@ footer {
     width: 100vw;
     height: 45px;
     padding: 5px;
-    background-color: #ffc107;
+    background-color: var(--principal);
     display: flex;   
     justify-content: space-between;    
     position: fixed;
@@ -22,7 +27,7 @@ footer {
 }
 
 footer p {
-    color: #fff;
+    color: #ffffff;
     font-size: 1.25em;
 }
 
@@ -38,22 +43,20 @@ footer p {
 
 .button {
     padding: 5px 15px;
-    border: 1px solid #ffce3b;
     border-radius: 5px;
-    cursor: pointer;
     position: fixed;
     bottom: 15px;
     right: 15px;
-    background-color: none;
-    color: #ffce3b;
+    background-color: #ffffff;
+    color: var(--principal);
+    border: 1px solid var(--principal);
 }
 .button:hover {
-    transition: 1s;
-    border: none;
-    background-color: #ffce3b;
-    color: #000000;
+    transition: 0.3s;
+    color: #ffffff;
+    background-color: var(--principal);
 }
 
 #sobre h3 {
-    color: #ffce3b;
+    color: var(--principal);
 }
