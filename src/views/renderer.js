@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnUpdate.disabled = true
     btnDelete.disabled = true
 
-    foco.focus()// iniciar documento com foca na caixa de texto
+    foco.focus()// iniciar documento com foco na caixa de texto
 })
 
 // Captura de dados
@@ -201,3 +201,20 @@ api.resetForm((args) => {
 })
 
 //= FIM RESET FORM ============================================//
+
+//= RESET CPF ================================================//
+
+function resetCpf() {
+    const ErroCpf = document.getElementById('cpf')
+    ErroCpf.style.border = "2px solid red";
+    ErroCpf.value = ""
+    ErroCpf.focus()
+
+}
+
+
+api.resetCpf((args) => {
+    resetCpf()
+})
+
+//= FIM RESET CPF ============================================//

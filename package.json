@@ -18,10 +18,10 @@
   },
   "homepage": "https://github.com/GuNunesB/cadastro#readme",
   "devDependencies": {
-    "electron": "^35.0.0"
+    "electron": "^35.1.2"
   },
   "dependencies": {
     "mongodb": "^6.15.0",
-    "mongoose": "^8.12.1"
+    "mongoose": "^8.13.1"
   }
 }

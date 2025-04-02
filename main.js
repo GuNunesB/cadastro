@@ -187,6 +187,21 @@ ipcMain.on('create-cliente', async (event, newCliente) => {
     })
 
   } catch (error) {
-    console.log(error)
+    if(error.code === 11000) {
+      dialog.showMessageBox({
+        type: 'error',
+        title: "Atenção!",
+        message: "CPF já cadastrado. \nVerifique o número digitado.",
+        buttons: ['OK']
+
+      }).then((result) => {
+        if(result.response === 0) {
+          event.reply('reset-cpf')
+        }
+
+      })
+    } else {
+      console.log(error)
+    }
   }
 })
