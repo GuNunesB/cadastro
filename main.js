@@ -6,6 +6,11 @@ const { conectar, desconectar } = require('./database.js')
 
 const clienteModel = require('./src/models/Clientes.js')
 
+// Manipulação de Arquivos
+const fs = require('fs')
+
+const { jspdf, default: jsPDF } = require('jspdf')
+
 let win
 const createWindow = () => {
   nativeTheme.themeSource = 'light'
@@ -98,11 +103,11 @@ const templete = [
     ]
   },
   {
-    label: 'Relatório',
+    label: 'Relatórios',
     submenu: [
       {
         label: 'Clientes',
-        accelerator: 'Alt+C'
+        click: () => relatorioClientes()
       }
     ]
   },
@@ -205,3 +210,76 @@ ipcMain.on('create-cliente', async (event, newCliente) => {
     }
   }
 })
+
+//= FIM CRUD CREATE ===============================================//
+
+//= CRUD READ ======================================================//
+
+async function relatorioClientes() {
+  try {
+    //Configuração do pdf
+    // p = portrait; mm = milimetros; a4 = tamanho do arquivo ( 210mm x 297mm);
+    const doc = new jsPDF('p', 'mm', 'a4')
+
+    const dataAtual = new Date().toLocaleDateString('pt-BR')
+    
+    doc.setFontSize(11)
+    doc.text(`Data: ${dataAtual}`, 165,15) // (x, y)
+
+    doc.setFontSize(18)
+    doc.text("Relatório de Clientes", 15,15)
+
+    doc.setFontSize(14)
+    let y = 50
+    doc.text("Nome: ", 15, y)
+    doc.text("Telefone: ", 80, y)
+    doc.text("Email: ", 130, y)
+    y += 5
+
+    doc.setLineWidth(0.5) //Linha
+    doc.line(10, y, 200, y)
+
+    y += 10
+
+    const clientes = await clienteModel.find().sort({nomeCliente: 1}) // .sort() deixa em ordem alfabetica
+    
+    clientes.forEach((c) => {
+      if (y> 280) {
+        doc.addPage()
+        y = 20
+
+        doc.text("Nome: ", 15, y)
+        doc.text("Telefone: ", 80, y)
+        doc.text("Email: ", 130, y)
+        y += 5
+
+        doc.setLineWidth(0.5) //Linha
+        doc.line(10, y, 200, y)
+
+        y += 10
+      }
+      doc.text(c.nomeCliente, 15, y)
+      doc.text(c.telCliente, 85, y)
+      doc.text(c.email, 130, y)
+      y += 10
+    })
+
+    const pages = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= pages; i++) {
+        doc.setPage(i)
+        doc.setFontSize(10)
+        doc.text(`Página ${i} de ${pages}`, 90, 290, { aling: 'center' })
+    }
+    //------------------------------------------------------------------------//
+    // Definir o caminho do arquivo temporário e nome do arquivo com extensão .pdf
+    const tempDir = app.getPath('temp')
+    const filePath = path.join(tempDir, 'clientes.pdf')
+    // salvar temporariamente o arquivo
+    doc.save(filePath)
+    // abrir o arquivo no aplicativo padrão de leitura de pdf do computador do usuário
+    shell.openPath(filePath)
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
