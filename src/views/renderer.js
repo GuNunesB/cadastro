@@ -26,7 +26,7 @@ api.dbStatus((event, message) => {
 
 console.log("teste")
 
-const foco = document.getElementById('inputNome')
+const foco = document.getElementById('searchClient')
 
 document.addEventListener('DOMContentLoaded', () => {
     // Desativar botões
@@ -218,3 +218,63 @@ api.resetCpf((args) => {
 })
 
 //= FIM RESET CPF ============================================//
+
+// == CRUD Read ===============================================
+
+// setar o nome do cliente para fazer um novo cadastro se a busca retornar que o cliente não está cadastrado.
+api.setName((args) => {
+    console.log("teste do IPC 'set-name'")
+    // "recortar" o nome da busca e setar no campo nome do form
+    let busca = document.getElementById('searchClient').value
+    // limpar o campo de busca (foco foi capturado de forma global)
+    foco.value=""
+    // foco no campo nome
+    nome.focus()    
+    // copiar o nome do cliente para o campo nome
+    nome.value = busca
+})
+
+function searchName() {
+    //console.log("teste do botão buscar")
+    //capturar o nome a ser pesquisado (passo 1)
+    let cliName = document.getElementById('searchClient').value
+    console.log(cliName) // teste do passo 1
+    // validação de campo obrigatório
+    // se o campo de busca não foi preenchido
+    if (cliName === "") {
+        // enviar ao main um pedido para alertar o usuário
+        // precisa usar o preload.js
+        api.validateSearch()
+    } else {
+        //enviar o nome do cliente ao main (passo 2)
+        api.searchName(cliName)
+        //receber os dados do cliente (passo 5)
+        api.renderClient((event, client) => {
+            //teste de recebimento dos dados do cliente
+            console.log(client)
+            //passo 6 renderização dos dados do cliente (preencher os inputs do form) - Não esquecer de converte os dados de string para JSON
+            const clientData = JSON.parse(client)
+            console.log("Converteu para JSON")
+            arrayClient = clientData
+            console.log("Criou um vetor de cliente")
+            // uso do forEach para percorrer o vetor e extrair os dados
+            arrayClient.forEach((c) => {
+                console.log("Entrou no vetor de cliente")
+                nome.value = c.nomeCliente
+                console.log("Setou o nome")
+                cpf.value = c.cpf
+                email.value = c.email
+                tel.value = c.telCliente
+                cep.value = c.cep
+                logradouro.value = c.logradouro
+                senha.value = c.senha
+                complemento.value = c.complemento
+                bairro.value = c.bairro
+                cidade.value = c.cidade
+                uf.value = c.uf
+            })
+        })
+    }
+}
+
+// == Fim - CRUD Read =========================================

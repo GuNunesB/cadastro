@@ -94,7 +94,7 @@ app.commandLine.appendSwitch('log-level', '3')
  
 const templete = [
   {
-    label: 'Cadastro',
+    label: 'Home',
     submenu: [
       {
         label: 'Sair',
@@ -302,8 +302,8 @@ ipcMain.on('search-name', async (event, cliName) => {
   try {
       // Passos 3 e 4 (busca dos dados do cliente pelo nome)
       // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
-      const client = await clientModel.find({
-          nomeCliente: new RegExp(cliName, 'i')
+      const client = await clienteModel.find({
+        nomeCliente: new RegExp(cliName, 'i')
       })
 
       // teste da busca do cliente pelo nome (passos 3 e 4)
