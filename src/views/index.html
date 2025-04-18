@@ -14,9 +14,20 @@
 <body>
     <h1 class="text-center">Cadastro de Clientes</h1>
 
-    <div class="container d-flex justify-content-center align-items-center py-5 mb-xs-5">
+    <div class="container d-flex justify-content-center align-items-center py-3 mb-xs-5">
 
         <form class="caixa" id="formCli">
+            <div class="form-row">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" id="searchClient" maxlength="30" spellcheck="false">
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" id="btnRead" onclick="searchClient()">Buscar</button>
+                </div>
+            </div>
+
+            <hr class="mt-4 border border-primary border -1">
+
             <div class="form-row">
                 <div class="form-group col-md-8">
                     <label for="inputAddress">Nome</label>

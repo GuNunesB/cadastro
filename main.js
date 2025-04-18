@@ -283,3 +283,58 @@ async function relatorioClientes() {
     console.log(error)
   }
 }
+
+// == Crud Read ===============================================
+
+// validação da busca
+ipcMain.on('validate-search', () => {
+  dialog.showMessageBox({
+      type: 'warning',
+      title: 'Atenção',
+      message: 'Preencha o campo de busca',
+      buttons: ['OK']
+  })
+})
+
+ipcMain.on('search-name', async (event, cliName) => {
+  // teste de recebimento do nome do cliente (passo2)
+  console.log(cliName)
+  try {
+      // Passos 3 e 4 (busca dos dados do cliente pelo nome)
+      // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
+      const client = await clientModel.find({
+          nomeCliente: new RegExp(cliName, 'i')
+      })
+
+      // teste da busca do cliente pelo nome (passos 3 e 4)
+      console.log(client)
+
+      if (client.length === 0) {
+        //questionar o usuário
+        dialog.showMessageBox({
+          type: 'warning',
+          title: 'Aviso',
+          message: 'Cliente não cadastrado.\nDeseja cadastrar esse cliente?',
+          defaultId: 0,
+          buttons: ['Sim', 'Não']
+        }).then((result) => {
+         if (result.response === 0) {
+          event.reply('set-name')
+          
+         } else {
+          event.reply('reset-form')
+
+         }
+        })
+      } else {
+        // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
+        event.reply('render-client', JSON.stringify(client))
+
+      }
+      
+  } catch (error) {
+      console.log(error)
+  }
+})
+
+// == Fim - Crud Read =========================================
