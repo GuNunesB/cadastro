@@ -50,6 +50,22 @@ let bairro = document.getElementById('bairro')
 let cpf = document.getElementById('cpf')
 let complemento = document.getElementById('inputCompl')
 
+// Enter
+function teclaEnter(event) {
+    if (event.key === "Enter") {
+        event.preventDefault() //Ignorar comportamento padrão
+        searchName()
+    }
+}
+
+// "Escuta do teclado" ('keydown' = precionar tecla)
+    formCli.addEventListener('keydown', teclaEnter)
+
+// restaurar enter
+function restaurarEnter() {
+    formCli.removeEventListener('keydown', teclaEnter)
+}
+
 //= CRUD CREATE ===============================================//
 
 formCli.addEventListener('submit', async (event) => {
@@ -232,22 +248,47 @@ api.setName((args) => {
     nome.focus()    
     // copiar o nome do cliente para o campo nome
     nome.value = busca
+
+    restaurarEnter()
+})
+
+api.setCpf((args) => {
+    console.log("teste do IPC 'set-cpf'")
+    // "recortar" o cpf da busca e setar no campo cpf do form
+    let busca = document.getElementById('searchClient').value
+    // limpar o campo de busca (foco foi capturado de forma global)
+    foco.value=""
+    // foco no campo cpf
+    cpf.focus()    
+    // copiar o cpf do cliente para o campo cpf
+    cpf.value = busca
+
+    restaurarEnter()
 })
 
 function searchName() {
     //console.log("teste do botão buscar")
     //capturar o nome a ser pesquisado (passo 1)
-    let cliName = document.getElementById('searchClient').value
-    console.log(cliName) // teste do passo 1
+    let searchValue = document.getElementById('searchClient').value
+    console.log(searchValue) // teste do passo 1
     // validação de campo obrigatório
     // se o campo de busca não foi preenchido
-    if (cliName === "") {
+    if (searchValue === "") {
         // enviar ao main um pedido para alertar o usuário
         // precisa usar o preload.js
         api.validateSearch()
     } else {
-        //enviar o nome do cliente ao main (passo 2)
-        api.searchName(cliName)
+
+        const isCPF = !isNaN(searchValue)
+
+        if (isCPF) {
+            api.searchCpf(searchValue)
+            console.log("É CPF!")
+        } else {
+            api.searchName(searchValue)
+            console.log("É Nome")
+        }
+        
         //receber os dados do cliente (passo 5)
         api.renderClient((event, client) => {
             //teste de recebimento dos dados do cliente
@@ -272,9 +313,11 @@ function searchName() {
                 bairro.value = c.bairro
                 cidade.value = c.cidade
                 uf.value = c.uf
+
+                restaurarEnter()
             })
         })
     }
 }
 
-// == Fim - CRUD Read =========================================
+// == Fim - CRUD Read ==========================================

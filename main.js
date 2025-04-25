@@ -337,4 +337,45 @@ ipcMain.on('search-name', async (event, cliName) => {
   }
 })
 
+ipcMain.on('search-cpf', async (event, cliCpf) => {
+  // teste de recebimento do nome do cliente (passo2)
+  console.log(cliCpf)
+  try {
+      // Passos 3 e 4 (busca dos dados do cliente pelo nome)
+      // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
+      const client = await clienteModel.find({
+        cpf: new RegExp(cliCpf, 'i')
+      })
+
+      // teste da busca do cliente pelo nome (passos 3 e 4)
+      console.log(client)
+
+      if (client.length === 0) {
+        //questionar o usuário
+        dialog.showMessageBox({
+          type: 'warning',
+          title: 'Aviso',
+          message: 'Cliente não cadastrado.\nDeseja cadastrar esse cliente?',
+          defaultId: 0,
+          buttons: ['Sim', 'Não']
+        }).then((result) => {
+         if (result.response === 0) {
+          event.reply('set-cpf')
+          
+         } else {
+          event.reply('reset-form')
+
+         }
+        })
+      } else {
+        // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
+        event.reply('render-client', JSON.stringify(client))
+
+      }
+      
+  } catch (error) {
+      console.log(error)
+  }
+})
+
 // == Fim - Crud Read =========================================
