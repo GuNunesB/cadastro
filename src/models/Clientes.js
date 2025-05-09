@@ -1,45 +1,50 @@
+/**
+ * Modelo de dados para construção das coleções("tabelas")
+ * Clientes
+ */
+
+// importação dos recursos do framework mongoose
 const { model, Schema } = require('mongoose')
 
-const clinteSchema = new Schema({
+// criação da estrutura da coleção Clientes
+const clienteSchema = new Schema({
     nomeCliente: {
         type: String
-    },
-    telCliente: {
-        type: String
-    },
-    email: {
-        type: String,
-    },
-    senha: {
-        type: String,
-    },
-    cep: {
-        type: String,
-    },
-    cidade: {
-        type: String,
-    },
-    uf: {
-        type: String,
-    },
-    logradouro: {
-        type: String,
-    },
-    bairro: {
-        type: String,
-    },
-    cpf: {
+    },    
+    cpfCliente: {
         type: String,
         unique: true,
         index: true
     },
-    complemento: {
+    emailCliente: {
         type: String
     },
-    dataCadastro: {
-        type: Date,
-        default: Date.now
-    }
-}, {versionKey: false})
+    foneCliente: {
+        type: String
+    },
+    cepCliente: {
+        type: String        
+    },
+    logradouroCliente: {
+        type: String  
+    },
+    numeroCliente: {
+        type: String  
+    },
+    complementoCliente: {
+        type: String  
+    },
+    bairroCliente: {
+        type: String 
+    },
+    cidadeCliente: {
+        type: String 
+    },
+    ufCliente: {
+        type: String 
+    },
+}, {versionKey: false}) //não versionar os dados armazenados
 
-module.exports = model('Clientes', clinteSchema)
+// exportar para o main o modelo de dados
+// OBS: Clientes será o nome da coleção
+module.exports = model('Clientes', clienteSchema)

@@ -1,381 +1,492 @@
-const { app, BrowserWindow, nativeTheme, Menu, shell, ipcMain, dialog } = require('electron/main')
+console.log("Processo principal")
 
+// shell (acessar links e aplicações externas)
+const { app, BrowserWindow, nativeTheme, Menu, ipcMain, dialog, shell } = require('electron')
+
+// Esta linha está relacionada ao preload.js
 const path = require('node:path')
 
+// Importação dos métodos conectar e desconectar (módulo de conexão)
 const { conectar, desconectar } = require('./database.js')
 
-const clienteModel = require('./src/models/Clientes.js')
+// Importação do Schema Clientes da camada model
+const clientModel = require('./src/models/Clientes.js')
 
-// Manipulação de Arquivos
+// Importação da biblioteca nativa do JS para manipular arquivos
 const fs = require('fs')
 
+// Importação do pacote jspdf (arquivos pdf) npm install jspdf
 const { jspdf, default: jsPDF } = require('jspdf')
 
+// Janela principal
 let win
 const createWindow = () => {
-  nativeTheme.themeSource = 'light'
-  win = new BrowserWindow({
-    width: 1010,
-    height: 780,
-
-    webPreferences: {
-      preload: path.join(__dirname, './preload.js')
-    }
-  })
-
-  Menu.setApplicationMenu(Menu.buildFromTemplate(templete))
-
-  win.loadFile('./src/views/index.html')
-}
-
-let about
-function aboutWindow() {
-  nativeTheme.themeSource = 'light'
-
-  const mainWindow = BrowserWindow.getFocusedWindow()
-
-  if (mainWindow) {
-    about = new BrowserWindow({
-      width: 415,
-      height: 350,
-      autoHideMenuBar: true,
-      resizable: false,
-      minimizable: false,
-      parent: mainWindow,
-      modal: true,
-      webPreferences: {
-        preload: path.join(__dirname, './preload.js')
-      }
+    // a linha abaixo define o tema (claro ou escuro)
+    nativeTheme.themeSource = 'light' //(dark ou light)
+    win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        //autoHideMenuBar: true,
+        //minimizable: false,
+        resizable: false,
+        //ativação do preload.js
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
     })
-  }
 
+    // menu personalizado
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 
-  about.loadFile('./src/views/sobre.html')
-
-  ipcMain.on('about-exit', () => {
-    if (about && !about.isDestroyed()) {
-      about.close()
-    }
-   
-  })
+    win.loadFile('./src/views/index.html')
 }
 
+// Janela sobre
+function aboutWindow() {
+    nativeTheme.themeSource = 'light'
+    // a linha abaixo obtém a janela principal
+    const main = BrowserWindow.getFocusedWindow()
+    let about
+    // Estabelecer uma relação hierárquica entre janelas
+    if (main) {
+        // Criar a janela sobre
+        about = new BrowserWindow({
+            width: 360,
+            height: 200,
+            autoHideMenuBar: true,
+            resizable: false,
+            minimizable: false,
+            parent: main,
+            modal: true
+        })
+    }
+    //carregar o documento html na janela
+    about.loadFile('./src/views/sobre.html')
+}
 
+// Janela cliente
+let client
+function clientWindow() {
+    nativeTheme.themeSource = 'light'
+    const main = BrowserWindow.getFocusedWindow()
+    if (main) {
+        client = new BrowserWindow({
+            width: 1010,
+            height: 680,
+            //autoHideMenuBar: true,
+            //resizable: false,
+            parent: main,
+            modal: true,
+            //ativação do preload.js
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js')
+            }
+        })
+    }
+    client.loadFile('./src/views/cliente.html')
+    client.center() //iniciar no centro da tela   
+}
+
+// Iniciar a aplicação
 app.whenReady().then(() => {
-  createWindow()
+    createWindow()
 
-  ipcMain.on('db-connect', async (event) => {
-    const conectado = await conectar()
-    if (conectado) {
-      setTimeout(() => {
-        event.reply('db-status', "conectado")
-      }, 500)
-    }
-  })
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
-    }
-  })
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow()
+        }
+    })
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
 })
 
-app.on('before-quit', async () => {
-  await desconectar()
-})
-
+// reduzir logs não críticos
 app.commandLine.appendSwitch('log-level', '3')
- 
-const templete = [
-  {
-    label: 'Home',
-    submenu: [
-      {
-        label: 'Sair',
-        accelerator: 'Esc'
-      }
-    ]
-  },
-  {
-    label: 'Relatórios',
-    submenu: [
-      {
-        label: 'Clientes',
-        click: () => relatorioClientes()
-      }
-    ]
-  },
-  {
-    label: 'Ferramentas',
-    submenu: [
-      {
-        label: 'Ampliar',
-        role: 'zoomIn',
-        accelerator: 'Ctrl+='
-      },
-      {
-        label: 'Reduzir',
-        role: 'zoomOut',
-        accelerator: 'Ctrl+-'
-      },
-      {
-        label: 'Tamanho padrão',
-        role: 'resetZoom',
-        accelerator: 'Ctrl+0'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Recarregar',
-        role: 'reload'
-      },
-      {
-        label: 'DevTools',
-        role: 'toggleDevTools',
-        accelerator: 'Ctrl+Shift'
-      }
-    ]
-  },
-  {
-    label: 'Ajuda',
-    submenu: [
-      {
-        label: 'Repositório',
-        click: () => shell.openExternal('https://github.com/GuNunesB/cadastro')
-      },
-      {
-        label: 'Sobre',
-        click: () => aboutWindow()
-      }
-    ]
-  }
+
+// iniciar a conexão com o banco de dados (pedido direto do preload.js)
+ipcMain.on('db-connect', async (event) => {
+    let conectado = await conectar()
+    // se conectado for igual a true
+    if (conectado) {
+        // enviar uma mensagem para o renderizador trocar o ícone, criar um delay de 0.5s para sincronizar a nuvem
+        setTimeout(() => {
+            event.reply('db-status', "conectado")
+        }, 500) //500ms        
+    }
+})
+
+// IMPORTANTE ! Desconectar do banco de dados quando a aplicação for encerrada.
+app.on('before-quit', () => {
+    desconectar()
+})
+
+// template do menu
+const template = [
+    {
+        label: 'Cadastro',
+        submenu: [
+            {
+                label: 'Clientes',
+                click: () => clientWindow()
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Sair',
+                click: () => app.quit(),
+                accelerator: 'Alt+F4'
+            }
+        ]
+    },
+    {
+        label: 'Relatórios',
+        submenu: [
+            {
+                label: 'Clientes',
+                click: () => relatorioClientes()
+            }
+        ]
+    },
+    {
+        label: 'Ferramentas',
+        submenu: [
+            {
+                label: 'Aplicar zoom',
+                role: 'zoomIn'
+            },
+            {
+                label: 'Reduzir',
+                role: 'zoomOut'
+            },
+            {
+                label: 'Restaurar o zoom padrão',
+                role: 'resetZoom'
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Recarregar',
+                role: 'reload'
+            },
+            {
+                label: 'Ferramentas do desenvolvedor',
+                role: 'toggleDevTools'
+            }
+        ]
+    },
+    {
+        label: 'Ajuda',
+        submenu: [
+            {
+                label: 'Sobre',
+                click: () => aboutWindow()
+            }
+        ]
+    }
 ]
 
-//= CRUD CREATE ===============================================//
-
-ipcMain.on('create-cliente', async (event, newCliente) => {
-  console.log(newCliente)
-
-  try {
-    const newClientes = clienteModel({
-      nomeCliente: newCliente.nomeCli,
-      telCliente: newCliente.telCli,
-      email: newCliente.emailCli,
-      senha: newCliente.senhaCli,
-      cep: newCliente.cepCli,
-      cidade: newCliente.cidadeCli,
-      uf: newCliente.ufCli,
-      logradouro: newCliente.logradouroCli,
-      bairro: newCliente.bairroCli,
-      cpf: newCliente.cpfCli,
-      complemento: newCliente.complementoCli,
-    })
-
-    await newClientes.save()
-
-    dialog.showMessageBox({
-      type: 'info',
-      title: "Aviso",
-      message: "Cliente adicionado com sucesso.",
-      buttons: ['OK']
-    }).then((result) => {
-      if (result.response === 0) {
-        event.reply('reset-form')
-      }
-    })
-
-  } catch (error) {
-    if(error.code === 11000) {
-      dialog.showMessageBox({
-        type: 'error',
-        title: "Atenção!",
-        message: "CPF já cadastrado. \nVerifique o número digitado.",
-        buttons: ['OK']
-
-      }).then((result) => {
-        if(result.response === 0) {
-          event.reply('reset-cpf')
-        }
-
-      })
-    } else {
-      console.log(error)
-    }
-  }
+// recebimento dos pedidos do renderizador para abertura de janelas (botões) autorizado no preload.js
+ipcMain.on('client-window', () => {
+    clientWindow()
 })
 
-//= FIM CRUD CREATE ===============================================//
-
-//= CRUD READ ======================================================//
-
-async function relatorioClientes() {
-  try {
-    //Configuração do pdf
-    // p = portrait; mm = milimetros; a4 = tamanho do arquivo ( 210mm x 297mm);
-    const doc = new jsPDF('p', 'mm', 'a4')
-
-    const dataAtual = new Date().toLocaleDateString('pt-BR')
-    
-    doc.setFontSize(11)
-    doc.text(`Data: ${dataAtual}`, 165,15) // (x, y)
-
-    doc.setFontSize(18)
-    doc.text("Relatório de Clientes", 15,15)
-
-    doc.setFontSize(14)
-    let y = 50
-    doc.text("Nome: ", 15, y)
-    doc.text("Telefone: ", 80, y)
-    doc.text("Email: ", 130, y)
-    y += 5
-
-    doc.setLineWidth(0.5) //Linha
-    doc.line(10, y, 200, y)
-
-    y += 10
-
-    const clientes = await clienteModel.find().sort({nomeCliente: 1}) // .sort() deixa em ordem alfabetica
-    
-    clientes.forEach((c) => {
-      if (y> 280) {
-        doc.addPage()
-        y = 20
-
-        doc.text("Nome: ", 15, y)
-        doc.text("Telefone: ", 80, y)
-        doc.text("Email: ", 130, y)
-        y += 5
-
-        doc.setLineWidth(0.5) //Linha
-        doc.line(10, y, 200, y)
-
-        y += 10
-      }
-      doc.text(c.nomeCliente, 15, y)
-      doc.text(c.telCliente, 85, y)
-      doc.text(c.email, 130, y)
-      y += 10
-    })
-
-    const pages = doc.internal.getNumberOfPages()
-    for (let i = 1; i <= pages; i++) {
-        doc.setPage(i)
-        doc.setFontSize(10)
-        doc.text(`Página ${i} de ${pages}`, 90, 290, { aling: 'center' })
+// ============================================================
+// == Clientes - CRUD Create
+// recebimento do objeto que contem os dados do cliente
+ipcMain.on('new-client', async (event, client) => {
+    // Importante! Teste de recebimento dos dados do cliente
+    console.log(client)
+    // Cadastrar a estrutura de dados no banco de dados MongoDB
+    try {
+        // criar uma nova de estrutura de dados usando a classe modelo. Atenção! Os atributos precisam ser idênticos ao modelo de dados Clientes.js e os valores são definidos pelo conteúdo do objeto cliente
+        const newClient = new clientModel({
+            nomeCliente: client.nameCli,
+            cpfCliente: client.cpfCli,
+            emailCliente: client.emailCli,
+            foneCliente: client.phoneCli,
+            cepCliente: client.cepCli,
+            logradouroCliente: client.addressCli,
+            numeroCliente: client.numberCli,
+            complementoCliente: client.complementCli,
+            bairroCliente: client.neighborhoodCli,
+            cidadeCliente: client.cityCli,
+            ufCliente: client.ufCli
+        })
+        // salvar os dados do cliente no banco de dados
+        await newClient.save()
+        //confirmação de cliente adicionado no banco
+        dialog.showMessageBox({
+            type: 'info',
+            title: "Aviso",
+            message: "Cliente adicionado com sucesso",
+            buttons: ['OK']
+        }).then((result) => {
+            if (result.response === 0) {
+                event.reply('reset-form')
+            }
+        })
+    } catch (error) {
+        //tratamento da excessão "CPF duplicado"
+        if (error.code === 11000) {
+            dialog.showMessageBox({
+                type: 'error',
+                title: "Atenção!",
+                message: "CPF já cadastrado.\nVerifique o número digitado.",
+                buttons: ['OK']
+            }).then((result) => {
+                // se o botão OK for pressionado
+                if (result.response === 0) {
+                    //Limpar o campo CPF, foco e borda em vermelho
+                }
+            })
+        } else {
+            console.log(error)
+        }
     }
-    //------------------------------------------------------------------------//
-    // Definir o caminho do arquivo temporário e nome do arquivo com extensão .pdf
-    const tempDir = app.getPath('temp')
-    const filePath = path.join(tempDir, 'clientes.pdf')
-    // salvar temporariamente o arquivo
-    doc.save(filePath)
-    // abrir o arquivo no aplicativo padrão de leitura de pdf do computador do usuário
-    shell.openPath(filePath)
-    
-  } catch (error) {
-    console.log(error)
-  }
-}
+})
 
+// == Fim - Clientes - CRUD Create
+// ============================================================
+
+
+// ============================================================
+// == Relatório de clientes ===================================
+async function relatorioClientes() {
+    try {
+        // ================================================
+        //          Configuração do documento pdf
+        // ================================================
+
+        // p (portrait)  l (landscape)
+        // a4 (210 mm x 297 mm)
+        const doc = new jsPDF('p', 'mm', 'a4')
+
+        // inserir data atual no documento
+        const dataAtual = new Date().toLocaleDateString('pt-BR')
+        // doc.setFontSize() tamanho da fonte em ponto(= word)
+        doc.setFontSize(10)
+        // doc.text() escreve um texto no documento
+        doc.text(`Data: ${dataAtual}`, 170, 15) //( x,y (mm))
+        doc.setFontSize(18)
+        doc.text("Relatório de clientes", 15, 30)
+        doc.setFontSize(12)
+        let y = 50 //variável de apoio
+        // cabeçalho da tabela
+        doc.text("Nome", 14, y)
+        doc.text("Telefone", 85, y)
+        doc.text("E-mail", 130, y)
+        y += 5
+        // desenhar uma linha
+        doc.setLineWidth(0.5)
+        doc.line(10, y, 200, y) // (10 (inicio)_________ 200 (fim))
+        y += 10
+
+        // ================================================
+        //  Obter a listagem de clientes(ordem alfabética)
+        // ================================================
+
+        const clientes = await clientModel.find().sort({ nomeCliente: 1 })
+        // teste de recimento (Importante!)
+        // console.log(clientes)
+        // popular o documento pdf com os clientes cadastrados
+        clientes.forEach((c) => {
+            // criar uma nova página se y > 280mm (A4 = 297mm)
+            if (y > 280) {
+                doc.addPage()
+                y = 20 //margem de 20mm para iniciar nova folha
+                // cabeçalho da tabela
+                doc.text("Nome", 14, y)
+                doc.text("Telefone", 85, y)
+                doc.text("E-mail", 130, y)
+                y += 5
+                // desenhar uma linha
+                doc.setLineWidth(0.5)
+                doc.line(10, y, 200, y) // (10 (inicio)_________ 200 (fim))
+                y += 10
+            }
+            doc.text(c.nomeCliente, 15, y)
+            doc.text(c.foneCliente, 85, y)
+            doc.text(c.emailCliente, 130, y)
+            y += 10
+        })
+
+        // ================================================
+        //         Numeração automática de páginas
+        // ================================================
+
+        const pages = doc.internal.getNumberOfPages()
+        for (let i = 1; i <= pages; i++) {
+            doc.setPage(i)
+            doc.setFontSize(10)
+            doc.text(`Página ${i} de ${pages}`, 105, 290, { align: 'center' })
+        }
+
+        // ================================================
+        //    Abrir o arquivo pdf no sistema operacional
+        // ================================================
+
+        // Definir o caminho do arquivo temporário e nome do arquivo com extensão .pdf (importante!)
+        const tempDir = app.getPath('temp')
+        const filePath = path.join(tempDir, 'clientes.pdf')
+        // salvar temporariamente o arquivo
+        doc.save(filePath)
+        // abrir o arquivo no aplicativo padrão de leitura de pdf do computador do usuário
+        shell.openPath(filePath)
+    } catch (error) {
+        console.log(error)
+    }
+}
+// == Fim - relatório de clientes =============================
+// ============================================================
+
+
+// ============================================================
 // == Crud Read ===============================================
 
 // validação da busca
 ipcMain.on('validate-search', () => {
-  dialog.showMessageBox({
-      type: 'warning',
-      title: 'Atenção',
-      message: 'Preencha o campo de busca',
-      buttons: ['OK']
-  })
+    dialog.showMessageBox({
+        type: 'warning',
+        title: 'Atenção',
+        message: 'Preencha o campo de busca',
+        buttons: ['OK']
+    })
 })
 
 ipcMain.on('search-name', async (event, cliName) => {
-  // teste de recebimento do nome do cliente (passo2)
-  console.log(cliName)
-  try {
-      // Passos 3 e 4 (busca dos dados do cliente pelo nome)
-      // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
-      const client = await clienteModel.find({
-        nomeCliente: new RegExp(cliName, 'i')
-      })
-
-      // teste da busca do cliente pelo nome (passos 3 e 4)
-      console.log(client)
-
-      if (client.length === 0) {
-        //questionar o usuário
-        dialog.showMessageBox({
-          type: 'warning',
-          title: 'Aviso',
-          message: 'Cliente não cadastrado.\nDeseja cadastrar esse cliente?',
-          defaultId: 0,
-          buttons: ['Sim', 'Não']
-        }).then((result) => {
-         if (result.response === 0) {
-          event.reply('set-name')
-          
-         } else {
-          event.reply('reset-form')
-
-         }
+    // teste de recebimento do nome do cliente (passo2)
+    console.log(cliName)
+    try {
+        // Passos 3 e 4 (busca dos dados do cliente pelo nome)
+        // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
+        const client = await clientModel.find({
+            nomeCliente: new RegExp(cliName, 'i')
         })
-      } else {
-        // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
-        event.reply('render-client', JSON.stringify(client))
-
-      }
-      
-  } catch (error) {
-      console.log(error)
-  }
-})
-
-ipcMain.on('search-cpf', async (event, cliCpf) => {
-  // teste de recebimento do nome do cliente (passo2)
-  console.log(cliCpf)
-  try {
-      // Passos 3 e 4 (busca dos dados do cliente pelo nome)
-      // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
-      const client = await clienteModel.find({
-        cpf: new RegExp(cliCpf, 'i')
-      })
-
-      // teste da busca do cliente pelo nome (passos 3 e 4)
-      console.log(client)
-
-      if (client.length === 0) {
-        //questionar o usuário
-        dialog.showMessageBox({
-          type: 'warning',
-          title: 'Aviso',
-          message: 'Cliente não cadastrado.\nDeseja cadastrar esse cliente?',
-          defaultId: 0,
-          buttons: ['Sim', 'Não']
-        }).then((result) => {
-         if (result.response === 0) {
-          event.reply('set-cpf')
-          
-         } else {
-          event.reply('reset-form')
-
-         }
-        })
-      } else {
-        // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
-        event.reply('render-client', JSON.stringify(client))
-
-      }
-      
-  } catch (error) {
-      console.log(error)
-  }
+        // teste da busca do cliente pelo nome (passos 3 e 4)
+        console.log(client)
+        // melhoria da experiência do usuário (se não existir um cliente cadastrado enviar uma mensagem ao usuário questionando se ele deseja cadastrar este novo cliente)
+        // se o vetor estiver vazio (lenght retorna o tamanho do vetor)
+        if (client.length === 0) {
+            // questionar o usuário ...
+            dialog.showMessageBox({
+                type: 'warning',
+                title: 'Aviso',
+                message: 'Cliente não cadastrado.\nDeseja cadastrar este cliente?',
+                defaultId: 0,
+                buttons: ['Sim', 'Não'] //[0, 1] defaultId: 0 = Sim
+            }).then((result) => {
+                // se o botão sim for pressionado
+                if (result.response === 0) {
+                    // enviar ao rendererCliente um pedido para recortar e copiar o nome do cliente do campo de busca para o campo nome (evitar que o usuário digite o nome novamente)
+                    event.reply('set-name')
+                } else {
+                    // enviar ao rendererCliente um pedido para limpar os campos (reutilzar a api do preload 'reset-form')
+                    event.reply('reset-form')
+                }
+            })
+        } else {
+            // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
+            event.reply('render-client', JSON.stringify(client))
+        }
+    } catch (error) {
+        console.log(error)
+    }
 })
 
 // == Fim - Crud Read =========================================
+// ============================================================
+
+
+// ============================================================
+// == CRUD Delete =============================================
+
+ipcMain.on('delete-client', async (event, id) => {
+    //console.log(id) //teste do passo 2
+    // confirmação antes de excluir
+    const result = await dialog.showMessageBox(win, {
+        type: 'warning',
+        title: "Atenção!",
+        message: "Tem certeza que deseja excluir este cliente?\nEsta ação não poderá ser desfeita.",
+        buttons: ['Cancelar', 'Excluir']
+    })
+    if (result.response === 1) {
+        try {
+            const delClient = await clientModel.findByIdAndDelete(id)
+            event.reply('reset-form')
+        } catch (error) {
+            console.log(error)
+        }
+    }
+})
+
+// == Fim - Crud delete =======================================
+// ============================================================
+
+
+// ============================================================
+// == Crud Update =============================================
+
+ipcMain.on('update-client', async (event, client) => {
+    // Importante! Teste de recebimento dos dados do cliente
+    console.log(client)
+    // Alterar a estrutura de dados no banco de dados MongoDB
+    try {
+        // criar uma nova de estrutura de dados usando a classe modelo. Atenção! Os atributos precisam ser idênticos ao modelo de dados Clientes.js e os valores são definidos pelo conteúdo do objeto cliente
+        const updateClient = await clientModel.findByIdAndUpdate(
+            client.idCli,
+            {
+                nomeCliente: client.nameCli,
+                cpfCliente: client.cpfCli,
+                emailCliente: client.emailCli,
+                foneCliente: client.phoneCli,
+                cepCliente: client.cepCli,
+                logradouroCliente: client.addressCli,
+                numeroCliente: client.numberCli,
+                complementoCliente: client.complementCli,
+                bairroCliente: client.neighborhoodCli,
+                cidadeCliente: client.cityCli,
+                ufCliente: client.ufCli
+            },
+            {
+                new: true
+            }
+        )        
+        // mensagem de confirmação
+        dialog.showMessageBox({
+            type: 'info',
+            title: "Aviso",
+            message: "Dados do cliente alterados com sucesso",
+            buttons: ['OK']
+        }).then((result) => {
+            if (result.response === 0) {
+                event.reply('reset-form')
+            }
+        })
+    } catch (error) {
+        //tratamento da excessão "CPF duplicado"
+        if (error.code === 11000) {
+            dialog.showMessageBox({
+                type: 'error',
+                title: "Atenção!",
+                message: "CPF já cadastrado.\nVerifique o número digitado.",
+                buttons: ['OK']
+            }).then((result) => {
+                // se o botão OK for pressionado
+                if (result.response === 0) {
+                    //Limpar o campo CPF, foco e borda em vermelho
+                }
+            })
+        } else {
+            console.log(error)
+        }
+    }
+})
+
+// == Fim - Crud update =======================================
+// ============================================================
