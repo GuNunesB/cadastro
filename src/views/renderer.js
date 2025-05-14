@@ -21,17 +21,16 @@ api.dbStatus((event, message) => {
         document.getElementById('icondb').src = "../public/img/dboff.png"
     }
 })
-
+//==================================================================
 // processo de cadastro do cliente //
-
-console.log("teste")
-
 const foco = document.getElementById('searchClient')
 
 document.addEventListener('DOMContentLoaded', () => {
     // Desativar botões
     btnUpdate.disabled = true
     btnDelete.disabled = true
+
+    btnCreate.disabled = false
 
     foco.focus()// iniciar documento com foco na caixa de texto
 })
@@ -49,6 +48,8 @@ let logradouro = document.getElementById('logradouro')
 let bairro = document.getElementById('bairro')
 let cpf = document.getElementById('cpf')
 let complemento = document.getElementById('inputCompl')
+let idClient = document.getElementById('inputIdClient')
+
 
 // Enter
 function teclaEnter(event) {
@@ -72,35 +73,40 @@ formCli.addEventListener('submit', async (event) => {
     // evitar comportamento padrão de recarregar a página
     event.preventDefault()
 
-    console.log(
-        nome.value, 
-        tel.value,
-        email.value,
-        senha.value,
-        cep.value,
-        cidade.value,
-        uf.value,
-        logradouro.value,
-        bairro.value,
-        cpf.value
-    )
+    if (idClient.value === "") {
+        const newCliente = {
+            nomeCli: nome.value,
+            telCli: tel.value,
+            emailCli: email.value,
+            senhaCli: senha.value,
+            cepCli: cep.value,
+            cidadeCli: cidade.value,
+            ufCli: uf.value,
+            logradouroCli: logradouro.value,
+            bairroCli: bairro.value,
+            cpfCli: cpf.value,
+            complementoCli: complemento.value
+        }
 
-    const newCliente = {
-        nomeCli: nome.value,
-        telCli: tel.value,
-        emailCli: email.value,
-        senhaCli: senha.value,
-        cepCli: cep.value,
-        cidadeCli: cidade.value,
-        ufCli: uf.value,
-        logradouroCli: logradouro.value,
-        bairroCli: bairro.value,
-        cpfCli: cpf.value,
-        complementoCli: complemento.value
-    }
-
-    api.addCliente(newCliente)
-
+        api.addCliente(newCliente)
+    } else {
+        const newCliente = {
+            idCli: idClient.value,
+            nomeCli: nome.value,
+            telCli: tel.value,
+            emailCli: email.value,
+            senhaCli: senha.value,
+            cepCli: cep.value,
+            cidadeCli: cidade.value,
+            ufCli: uf.value,
+            logradouroCli: logradouro.value,
+            bairroCli: bairro.value,
+            cpfCli: cpf.value,
+            complementoCli: complemento.value
+        }
+        
+        api.updateClient(client)
+    }    
 })
 
 // fim processo de cadastro do cliente //
@@ -267,6 +273,7 @@ api.setCpf((args) => {
 })
 
 function searchName() {
+    console.log(idClient)
     //console.log("teste do botão buscar")
     //capturar o nome a ser pesquisado (passo 1)
     let searchValue = document.getElementById('searchClient').value
@@ -304,6 +311,7 @@ function searchName() {
                 nome.value = c.nomeCliente
                 console.log("Setou o nome")
                 cpf.value = c.cpf
+                console.log(cpf.value)
                 email.value = c.email
                 tel.value = c.telCliente
                 cep.value = c.cep
@@ -313,11 +321,25 @@ function searchName() {
                 bairro.value = c.bairro
                 cidade.value = c.cidade
                 uf.value = c.uf
+                idClient.value = c._id
 
                 restaurarEnter()
+                btnUpdate.disabled = false
+                btnDelete.disabled = false
             })
         })
     }
 }
 
 // == Fim - CRUD Read ==========================================
+
+// == CRUD Delete =============================================
+
+function removeClient() {
+    //console.log(idClient.value) // teste do Passo 1
+    // Passo 2 - Envio do id para o main
+    api.deleteClient(idClient.value)
+}
+
+// == Fim - CRUD Delete =======================================
+// ============================================================
