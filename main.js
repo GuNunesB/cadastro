@@ -16,7 +16,7 @@ const createWindow = () => {
   nativeTheme.themeSource = 'light'
   win = new BrowserWindow({
     width: 1010,
-    height: 780,
+    height: 820,
 
     webPreferences: {
       preload: path.join(__dirname, './preload.js')
@@ -408,26 +408,26 @@ ipcMain.on('delete-client', async (event, id) => {
 // ============================================================
 // == Crud Update =============================================
 
-ipcMain.on('update-client', async (event, client) => {
+ipcMain.on('update-client', async (event, cliente) => {
   // Importante! Teste de recebimento dos dados do cliente
-  console.log(client)
+  console.log(cliente)
   // Alterar a estrutura de dados no banco de dados MongoDB
   try {
       // criar uma nova de estrutura de dados usando a classe modelo. Atenção! Os atributos precisam ser idênticos ao modelo de dados Clientes.js e os valores são definidos pelo conteúdo do objeto cliente
       const updateClient = await clienteModel.findByIdAndUpdate(
-          client.idCli,
+          cliente.idCli,
           {
-              nomeCliente: client.nameCli,
-              cpfCliente: client.cpfCli,
-              emailCliente: client.emailCli,
-              foneCliente: client.phoneCli,
-              cepCliente: client.cepCli,
-              logradouroCliente: client.addressCli,
-              numeroCliente: client.numberCli,
-              complementoCliente: client.complementCli,
-              bairroCliente: client.neighborhoodCli,
-              cidadeCliente: client.cityCli,
-              ufCliente: client.ufCli
+            nomeCliente: cliente.nomeCli,
+            telCliente: cliente.telCli,
+            email: cliente.emailCli,
+            senha: cliente.senhaCli,
+            cep: cliente.cepCli,
+            cidade: cliente.cidadeCli,
+            uf: cliente.ufCli,
+            logradouro: cliente.logradouroCli,
+            bairro: cliente.bairroCli,
+            cpf: cliente.cpfCli,
+            complemento: cliente.complementoCli,
           },
           {
               new: true

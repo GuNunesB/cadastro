@@ -90,7 +90,7 @@ formCli.addEventListener('submit', async (event) => {
 
         api.addCliente(newCliente)
     } else {
-        const newCliente = {
+        const cliente = {
             idCli: idClient.value,
             nomeCli: nome.value,
             telCli: tel.value,
@@ -105,7 +105,7 @@ formCli.addEventListener('submit', async (event) => {
             complementoCli: complemento.value
         }
         
-        api.updateClient(client)
+        api.updateClient(cliente)
     }    
 })
 

@@ -60,3 +60,7 @@ footer p {
 #sobre h3 {
     color: var(--principal);
 }
+
+#inputIdClient {
+    display: none;
+}
