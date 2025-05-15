@@ -14,28 +14,24 @@ function obterData() {
 document.getElementById('dataAtual').innerHTML = obterData()
 
 api.dbStatus((event, message) => {
-    console.log(message)
     if (message === "conectado") {
         document.getElementById('icondb').src = "../public/img/dbon.png"
     } else {
         document.getElementById('icondb').src = "../public/img/dboff.png"
     }
 })
-//==================================================================
-// processo de cadastro do cliente //
+
 const foco = document.getElementById('searchClient')
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Desativar botões
     btnUpdate.disabled = true
     btnDelete.disabled = true
 
     btnCreate.disabled = false
 
-    foco.focus()// iniciar documento com foco na caixa de texto
+    foco.focus()
 })
 
-// Captura de dados
 let formCli = document.getElementById('formCli')
 let nome = document.getElementById('inputNome')
 let tel = document.getElementById('inputTel')
@@ -50,27 +46,20 @@ let cpf = document.getElementById('cpf')
 let complemento = document.getElementById('inputCompl')
 let idClient = document.getElementById('inputIdClient')
 
-
-// Enter
 function teclaEnter(event) {
     if (event.key === "Enter") {
-        event.preventDefault() //Ignorar comportamento padrão
+        event.preventDefault()
         searchName()
     }
 }
 
-// "Escuta do teclado" ('keydown' = precionar tecla)
     formCli.addEventListener('keydown', teclaEnter)
 
-// restaurar enter
 function restaurarEnter() {
     formCli.removeEventListener('keydown', teclaEnter)
 }
 
-//= CRUD CREATE ===============================================//
-
 formCli.addEventListener('submit', async (event) => {
-    // evitar comportamento padrão de recarregar a página
     event.preventDefault()
 
     if (idClient.value === "") {
@@ -109,11 +98,6 @@ formCli.addEventListener('submit', async (event) => {
     }    
 })
 
-// fim processo de cadastro do cliente //
-
-/*Validadores para cadastro de um cliente*/
-
-// Validação de e-mail
 function validarEmail() {
     let email = document.getElementById('inputEmail4').value;
     let regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -127,13 +111,11 @@ function validarEmail() {
     return true;
 }
 
-// Validação de CPF
 function validarCPF() {
     let cpfInput = document.getElementById('cpf');
     let cpfErro = document.getElementById('cpfErro');
-    let cpf = cpfInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+    let cpf = cpfInput.value.replace(/\D/g, '');
 
-    // Resetando mensagens e estilos
     cpfErro.textContent = "";
     cpfInput.style.border = "";
 
@@ -167,14 +149,11 @@ function validarCPF() {
     return true;
 }
 
-
-// Validação de CEP
 function buscarEndereco() {
     let cepInput = document.getElementById('cep');
     let cepErro = document.getElementById('cepErro');
-    let cep = cepInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-
-    // Resetando mensagens e estilos
+    let cep = cepInput.value.replace(/\D/g, '');
+    
     cepErro.textContent = "";
     cepErro.style.color = "red";
     cepInput.style.border = "";
@@ -196,7 +175,6 @@ function buscarEndereco() {
                 return;
             }
 
-            // Preenche os campos com os dados do CEP
             document.getElementById('logradouro').value = dados.logradouro || '';
             document.getElementById('bairro').value = dados.bairro || '';
             document.getElementById('cidade').value = dados.localidade || '';
@@ -205,13 +183,10 @@ function buscarEndereco() {
             cepInput.style.border = "2px solid #008000";
         })
         .catch(error => {
-            console.error('Erro ao buscar o endereço:', error);
             cepErro.textContent = "Erro ao consultar o CEP.";
             cepInput.style.border = "2px solid red";
         });
 }
-
-//= RESET FORM ================================================//
 
 function resetForm() {
     location.reload()
@@ -221,10 +196,6 @@ function resetForm() {
 api.resetForm((args) => {
     resetForm()
 })
-
-//= FIM RESET FORM ============================================//
-
-//= RESET CPF ================================================//
 
 function resetCpf() {
     const ErroCpf = document.getElementById('cpf')
@@ -239,79 +210,50 @@ api.resetCpf((args) => {
     resetCpf()
 })
 
-//= FIM RESET CPF ============================================//
-
-// == CRUD Read ===============================================
-
-// setar o nome do cliente para fazer um novo cadastro se a busca retornar que o cliente não está cadastrado.
 api.setName((args) => {
-    console.log("teste do IPC 'set-name'")
-    // "recortar" o nome da busca e setar no campo nome do form
     let busca = document.getElementById('searchClient').value
-    // limpar o campo de busca (foco foi capturado de forma global)
+
     foco.value=""
-    // foco no campo nome
+
     nome.focus()    
-    // copiar o nome do cliente para o campo nome
     nome.value = busca
 
     restaurarEnter()
 })
 
 api.setCpf((args) => {
-    console.log("teste do IPC 'set-cpf'")
-    // "recortar" o cpf da busca e setar no campo cpf do form
     let busca = document.getElementById('searchClient').value
-    // limpar o campo de busca (foco foi capturado de forma global)
+ 
     foco.value=""
-    // foco no campo cpf
-    cpf.focus()    
-    // copiar o cpf do cliente para o campo cpf
+
+    cpf.focus()
     cpf.value = busca
 
     restaurarEnter()
 })
 
 function searchName() {
-    console.log(idClient)
-    //console.log("teste do botão buscar")
-    //capturar o nome a ser pesquisado (passo 1)
     let searchValue = document.getElementById('searchClient').value
-    console.log(searchValue) // teste do passo 1
-    // validação de campo obrigatório
-    // se o campo de busca não foi preenchido
     if (searchValue === "") {
-        // enviar ao main um pedido para alertar o usuário
-        // precisa usar o preload.js
         api.validateSearch()
+
     } else {
 
         const isCPF = !isNaN(searchValue)
 
         if (isCPF) {
             api.searchCpf(searchValue)
-            console.log("É CPF!")
         } else {
             api.searchName(searchValue)
-            console.log("É Nome")
         }
-        
-        //receber os dados do cliente (passo 5)
         api.renderClient((event, client) => {
-            //teste de recebimento dos dados do cliente
-            console.log(client)
-            //passo 6 renderização dos dados do cliente (preencher os inputs do form) - Não esquecer de converte os dados de string para JSON
             const clientData = JSON.parse(client)
-            console.log("Converteu para JSON")
+
             arrayClient = clientData
-            console.log("Criou um vetor de cliente")
-            // uso do forEach para percorrer o vetor e extrair os dados
+
             arrayClient.forEach((c) => {
-                console.log("Entrou no vetor de cliente")
                 nome.value = c.nomeCliente
-                console.log("Setou o nome")
                 cpf.value = c.cpf
-                console.log(cpf.value)
                 email.value = c.email
                 tel.value = c.telCliente
                 cep.value = c.cep
@@ -331,15 +273,10 @@ function searchName() {
     }
 }
 
-// == Fim - CRUD Read ==========================================
-
-// == CRUD Delete =============================================
-
 function removeClient() {
-    //console.log(idClient.value) // teste do Passo 1
-    // Passo 2 - Envio do id para o main
     api.deleteClient(idClient.value)
 }
 
-// == Fim - CRUD Delete =======================================
-// ============================================================
+function fechar() {
+    api.aboutExit()
+}

@@ -6,7 +6,6 @@ const { conectar, desconectar } = require('./database.js')
 
 const clienteModel = require('./src/models/Clientes.js')
 
-// Manipulação de Arquivos
 const fs = require('fs')
 
 const { jspdf, default: jsPDF } = require('jspdf')
@@ -158,8 +157,6 @@ const templete = [
   }
 ]
 
-//= CRUD CREATE ===============================================//
-
 ipcMain.on('create-cliente', async (event, newCliente) => {
   console.log(newCliente)
 
@@ -211,20 +208,14 @@ ipcMain.on('create-cliente', async (event, newCliente) => {
   }
 })
 
-//= FIM CRUD CREATE ===============================================//
-
-//= CRUD READ ======================================================//
-
 async function relatorioClientes() {
   try {
-    //Configuração do pdf
-    // p = portrait; mm = milimetros; a4 = tamanho do arquivo ( 210mm x 297mm);
     const doc = new jsPDF('p', 'mm', 'a4')
 
     const dataAtual = new Date().toLocaleDateString('pt-BR')
     
     doc.setFontSize(11)
-    doc.text(`Data: ${dataAtual}`, 165,15) // (x, y)
+    doc.text(`Data: ${dataAtual}`, 165,15)
 
     doc.setFontSize(18)
     doc.text("Relatório de Clientes", 15,15)
@@ -236,12 +227,12 @@ async function relatorioClientes() {
     doc.text("Email: ", 130, y)
     y += 5
 
-    doc.setLineWidth(0.5) //Linha
+    doc.setLineWidth(0.5)
     doc.line(10, y, 200, y)
 
     y += 10
 
-    const clientes = await clienteModel.find().sort({nomeCliente: 1}) // .sort() deixa em ordem alfabetica
+    const clientes = await clienteModel.find().sort({nomeCliente: 1})
     
     clientes.forEach((c) => {
       if (y> 280) {
@@ -253,7 +244,7 @@ async function relatorioClientes() {
         doc.text("Email: ", 130, y)
         y += 5
 
-        doc.setLineWidth(0.5) //Linha
+        doc.setLineWidth(0.5)
         doc.line(10, y, 200, y)
 
         y += 10
@@ -270,13 +261,9 @@ async function relatorioClientes() {
         doc.setFontSize(10)
         doc.text(`Página ${i} de ${pages}`, 90, 290, { aling: 'center' })
     }
-    //------------------------------------------------------------------------//
-    // Definir o caminho do arquivo temporário e nome do arquivo com extensão .pdf
     const tempDir = app.getPath('temp')
     const filePath = path.join(tempDir, 'clientes.pdf')
-    // salvar temporariamente o arquivo
     doc.save(filePath)
-    // abrir o arquivo no aplicativo padrão de leitura de pdf do computador do usuário
     shell.openPath(filePath)
     
   } catch (error) {
@@ -284,9 +271,6 @@ async function relatorioClientes() {
   }
 }
 
-// == Crud Read ===============================================
-
-// validação da busca
 ipcMain.on('validate-search', () => {
   dialog.showMessageBox({
       type: 'warning',
@@ -297,20 +281,14 @@ ipcMain.on('validate-search', () => {
 })
 
 ipcMain.on('search-name', async (event, cliName) => {
-  // teste de recebimento do nome do cliente (passo2)
-  console.log(cliName)
   try {
-      // Passos 3 e 4 (busca dos dados do cliente pelo nome)
-      // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
       const client = await clienteModel.find({
         nomeCliente: new RegExp(cliName, 'i')
       })
 
-      // teste da busca do cliente pelo nome (passos 3 e 4)
       console.log(client)
 
       if (client.length === 0) {
-        //questionar o usuário
         dialog.showMessageBox({
           type: 'warning',
           title: 'Aviso',
@@ -327,9 +305,7 @@ ipcMain.on('search-name', async (event, cliName) => {
          }
         })
       } else {
-        // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
         event.reply('render-client', JSON.stringify(client))
-
       }
       
   } catch (error) {
@@ -338,20 +314,14 @@ ipcMain.on('search-name', async (event, cliName) => {
 })
 
 ipcMain.on('search-cpf', async (event, cliCpf) => {
-  // teste de recebimento do nome do cliente (passo2)
-  console.log(cliCpf)
   try {
-      // Passos 3 e 4 (busca dos dados do cliente pelo nome)
-      // RegExp (expressão regular 'i' -> insensitive (ignorar letra smaiúsculas ou minúsculas))
       const client = await clienteModel.find({
         cpf: new RegExp(cliCpf, 'i')
       })
 
-      // teste da busca do cliente pelo nome (passos 3 e 4)
       console.log(client)
 
       if (client.length === 0) {
-        //questionar o usuário
         dialog.showMessageBox({
           type: 'warning',
           title: 'Aviso',
@@ -368,7 +338,6 @@ ipcMain.on('search-cpf', async (event, cliCpf) => {
          }
         })
       } else {
-        // enviar ao renderizador (rendererCliente) os dados do cliente (passo 5) OBS: não esquecer de converter para string "JSON.stringify"
         event.reply('render-client', JSON.stringify(client))
 
       }
@@ -378,13 +347,7 @@ ipcMain.on('search-cpf', async (event, cliCpf) => {
   }
 })
 
-// == Fim - Crud Read =========================================
-// ============================================================
-// == CRUD Delete =============================================
-
 ipcMain.on('delete-client', async (event, id) => {
-  //console.log(id) //teste do passo 2
-  // confirmação antes de excluir
   const result = await dialog.showMessageBox(win, {
       type: 'warning',
       title: "Atenção!",
@@ -401,19 +364,8 @@ ipcMain.on('delete-client', async (event, id) => {
   }
 })
 
-// == Fim - Crud delete =======================================
-// ============================================================
-
-
-// ============================================================
-// == Crud Update =============================================
-
 ipcMain.on('update-client', async (event, cliente) => {
-  // Importante! Teste de recebimento dos dados do cliente
-  console.log(cliente)
-  // Alterar a estrutura de dados no banco de dados MongoDB
   try {
-      // criar uma nova de estrutura de dados usando a classe modelo. Atenção! Os atributos precisam ser idênticos ao modelo de dados Clientes.js e os valores são definidos pelo conteúdo do objeto cliente
       const updateClient = await clienteModel.findByIdAndUpdate(
           cliente.idCli,
           {
@@ -433,7 +385,7 @@ ipcMain.on('update-client', async (event, cliente) => {
               new: true
           }
       )        
-      // mensagem de confirmação
+
       dialog.showMessageBox({
           type: 'info',
           title: "Aviso",
@@ -445,7 +397,6 @@ ipcMain.on('update-client', async (event, cliente) => {
           }
       })
   } catch (error) {
-      //tratamento da excessão "CPF duplicado"
       if (error.code === 11000) {
           dialog.showMessageBox({
               type: 'error',
@@ -453,9 +404,7 @@ ipcMain.on('update-client', async (event, cliente) => {
               message: "CPF já cadastrado.\nVerifique o número digitado.",
               buttons: ['OK']
           }).then((result) => {
-              // se o botão OK for pressionado
               if (result.response === 0) {
-                  //Limpar o campo CPF, foco e borda em vermelho
               }
           })
       } else {
@@ -463,6 +412,3 @@ ipcMain.on('update-client', async (event, cliente) => {
       }
   }
 })
-
-// == Fim - Crud update =======================================
-// ============================================================
